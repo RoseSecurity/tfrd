@@ -8,6 +8,18 @@
 *.so
 *.dylib
 
+# Terraform and infrastructure as code files
+*.terraform
+.terraformrc
+terraform.rc
+terraform.tfstate*
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars.json
+**/terraform.auto.tfvars.json
+**/*.terraform.tfvars.json
+**/*.terraform.auto.tfvars.json
+
 # Test binary, built with `go test -c`
 *.test
 
