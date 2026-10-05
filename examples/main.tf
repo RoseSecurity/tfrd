@@ -1,3 +1,5 @@
+# Copyright RoseSecurity 2026
+
 terraform {
   required_version = ">= 1.5.6"
   required_providers {

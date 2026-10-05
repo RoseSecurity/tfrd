@@ -2,7 +2,7 @@ schema_version = 1
 
 project {
   copyright_year = 2026
-  copyright_holder = "Sheetz"
+  copyright_holder = "RoseSecurity"
 
   header_ignore = [
     # tests used within documentation (prose)
@@ -13,3 +13,4 @@ project {
     ".golangci.yml",
   ]
 }
+

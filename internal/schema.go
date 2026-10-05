@@ -1,3 +1,5 @@
+// Copyright RoseSecurity 2026
+
 package internal
 
 import (
@@ -8,6 +10,7 @@ import (
 	"strings"
 
 	tfjson "github.com/hashicorp/terraform-json"
+	"github.com/manifoldco/promptui"
 )
 
 // SchemaSet wraps the provider schemas dumped by Terraform and lets callers
@@ -26,6 +29,29 @@ func LoadSchemas(dir string) (*SchemaSet, error) {
 	if err := cmd.Run(); err != nil {
 		msg := strings.TrimSpace(stderr.String())
 		if strings.Contains(msg, "terraform init") || strings.Contains(msg, "Missing") {
+			// Prompt the user if they want to run terraform init in the directory or do it themselves.
+			prompt := promptui.Prompt{
+				Label:     "Do you want to run `terraform init` in this directory now? (y/N)",
+				IsConfirm: true,
+			}
+
+			result, err := prompt.Run()
+			if err != nil {
+				fmt.Println("Prompt cancelled or declined.")
+				return nil, fmt.Errorf("could not read provider schema — run `terraform init` in %q first\n\n%s", dir, msg)
+			}
+			if strings.ToLower(result) == "y" {
+				// Let the user know that terraform init is being run.
+				fmt.Printf("Running `terraform init` in %q...\n", dir)
+				initCmd := exec.Command("terraform", fmt.Sprintf("-chdir=%s", dir), "init")
+				initCmd.Stdout = &stdout
+				initCmd.Stderr = &stderr
+				if err := initCmd.Run(); err != nil {
+					return nil, fmt.Errorf("terraform init failed: %v\n%s", err, stderr.String())
+				}
+				// Retry loading the schemas after successful init.
+				return LoadSchemas(dir)
+			}
 			return nil, fmt.Errorf("could not read provider schema — run `terraform init` in %q first\n\n%s", dir, msg)
 		}
 		return nil, fmt.Errorf("terraform providers schema failed: %v\n%s", err, msg)

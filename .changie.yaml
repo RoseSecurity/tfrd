@@ -1,3 +1,5 @@
+# Copyright RoseSecurity 2026
+
 changesDir: .changes
 unreleasedDir: unreleased
 headerPath: header.tpl.md

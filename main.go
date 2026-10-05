@@ -1,4 +1,6 @@
-// Package main acts as the entrypoint for the tfrd command.
+// Copyright RoseSecurity 2026
+
+// Package main acts as the entrypoint for the tfrd application.
 package main
 
 import (
@@ -7,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/The-Infra-Company/tfrd/cmd"
+	"github.com/RoseSecurity/tfrd/cmd"
 )
 
 func main() {
@@ -15,6 +17,7 @@ func main() {
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
 	go listenForInterrupt(stopChan)
+
 	cmd.Execute()
 }
 
