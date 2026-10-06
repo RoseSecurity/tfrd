@@ -1,17 +1,16 @@
+// Copyright RoseSecurity 2026
+
 package cmd
 
 import (
 	"log/slog"
 	"os"
 
-	"github.com/The-Infra-Company/tfrd/internal"
+	"github.com/RoseSecurity/tfrd/internal"
 	"github.com/spf13/cobra"
 )
 
 var (
-	// Version is injected during build via ldflags.
-	Version = "dev"
-
 	file            string
 	resource        string
 	includeComputed bool
@@ -42,7 +41,11 @@ func init() {
 }
 
 func runRoot(cmd *cobra.Command, args []string) error {
-	dir := "."
+	dir, err := os.Getwd()
+	if err != nil {
+		slog.Error(err.Error())
+	}
+
 	if len(args) > 0 {
 		dir = args[0]
 	}

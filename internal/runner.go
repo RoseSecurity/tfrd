@@ -1,3 +1,5 @@
+// Copyright RoseSecurity 2026
+
 package internal
 
 import (

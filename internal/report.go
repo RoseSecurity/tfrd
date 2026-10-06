@@ -1,3 +1,5 @@
+// Copyright RoseSecurity 2026
+
 package internal
 
 import (
@@ -6,6 +8,7 @@ import (
 	"io"
 	"sort"
 
+	"charm.land/lipgloss/v2"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -104,37 +107,86 @@ func AttrType(a *tfjson.SchemaAttribute) string {
 }
 
 func PrintText(w io.Writer, reports []ResourceReport) {
+	nameStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("69"))
+
+	okStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("42"))
+
+	errStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("196"))
+
+	metaStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("245"))
+
 	for i, rep := range reports {
 		if i > 0 {
 			fmt.Fprintln(w)
 		}
+
 		if rep.Error != "" {
-			fmt.Fprintf(w, "%s\n  ! %s\n", rep.Address, rep.Error)
+			fmt.Fprintf(
+				w,
+				"%s  %s\n",
+				nameStyle.Render(rep.Address),
+				errStyle.Render(rep.Error),
+			)
 			continue
 		}
-		fmt.Fprintf(w, "%s  (%d/%d settable args used, %.0f%% coverage)\n",
-			rep.Address, rep.Used, rep.Total, rep.Coverage)
+
+		fmt.Fprintf(
+			w,
+			"%s  %s\n",
+			nameStyle.Render(rep.Address),
+			metaStyle.Render(
+				fmt.Sprintf(
+					"%d/%d used (%.0f%% coverage)",
+					rep.Used,
+					rep.Total,
+					rep.Coverage,
+				),
+			),
+		)
+
 		if len(rep.Unused) == 0 {
-			fmt.Fprintln(w, "  ✓ every settable argument is used")
+			fmt.Fprintf(w, "  %s\n", okStyle.Render("✓ all settable arguments used"))
 			continue
 		}
+
 		for _, f := range rep.Unused {
-			marker := " "
-			label := ""
+			icon := "•"
+			detail := ""
+
 			switch {
 			case f.Required:
-				marker = "!"
-				label = "  (required)"
+				icon = errStyle.Render("!")
+				detail = "required"
 			case f.Computed:
-				label = "  (read-only)"
+				detail = "read-only"
+			case f.Kind == "block":
+				detail = "block"
+			case f.Type != "":
+				detail = f.Type
 			}
-			typ := ""
-			if f.Kind == "block" {
-				typ = " {block}"
-			} else if f.Type != "" {
-				typ = " : " + f.Type
+
+			if detail != "" {
+				fmt.Fprintf(
+					w,
+					"  %-2s %-40s %s\n",
+					icon,
+					f.Path,
+					metaStyle.Render(detail),
+				)
+			} else {
+				fmt.Fprintf(
+					w,
+					"  %-2s %s\n",
+					icon,
+					f.Path,
+				)
 			}
-			fmt.Fprintf(w, "  %s %s%s%s\n", marker, f.Path, typ, label)
 		}
 	}
 }

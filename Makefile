@@ -13,7 +13,7 @@ fmt: ## Format Go files
 	gofumpt -w .
 
 build: ## Build tfrd
-	env $(if $(GOOS),GOOS=$(GOOS)) $(if $(GOARCH),GOARCH=$(GOARCH)) $(GO) build -o build/$(BINARY_NAME) -ldflags "-X github.com/The-Infra-Company/tfrd/cmd.Version=local"
+	env $(if $(GOOS),GOOS=$(GOOS)) $(if $(GOARCH),GOARCH=$(GOARCH)) $(GO) build -o build/$(BINARY_NAME) -ldflags "-X github.com/RoseSecurity/tfrd/cmd.Version=local"
 
 install: ## Download dependencies
 	$(GO) mod download
