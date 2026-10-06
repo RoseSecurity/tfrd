@@ -20,9 +20,11 @@ var docsCmd = &cobra.Command{
 		if err := os.MkdirAll(docsDir, 0o755); err != nil {
 			return fmt.Errorf("creating docs directory: %w", err)
 		}
+
 		if err := doc.GenMarkdownTree(rootCmd, docsDir); err != nil {
 			return fmt.Errorf("generating docs: %w", err)
 		}
+
 		return nil
 	},
 }

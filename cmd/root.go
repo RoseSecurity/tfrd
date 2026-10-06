@@ -11,9 +11,6 @@ import (
 )
 
 var (
-	// Version is injected during build via ldflags.
-	Version = "dev"
-
 	file            string
 	resource        string
 	includeComputed bool
