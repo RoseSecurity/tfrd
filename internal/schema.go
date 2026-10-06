@@ -43,7 +43,7 @@ func LoadSchemas(dir string) (*SchemaSet, error) {
 			if strings.ToLower(result) == "y" {
 				// Let the user know that terraform init is being run.
 				fmt.Printf("Running `terraform init` in %q...\n", dir)
-				initCmd := exec.Command("terraform", fmt.Sprintf("-chdir=%s", dir), "init")
+				initCmd := exec.Command("terraform", fmt.Sprintf("-chdir=%s", dir), "init", "-backend=false")
 				initCmd.Stdout = &stdout
 				initCmd.Stderr = &stderr
 				if err := initCmd.Run(); err != nil {
