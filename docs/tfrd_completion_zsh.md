@@ -42,4 +42,3 @@ tfrd completion zsh [flags]
 ### SEE ALSO
 
 * [tfrd completion](tfrd_completion.md)	 - Generate the autocompletion script for the specified shell
-

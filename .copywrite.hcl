@@ -13,4 +13,3 @@ project {
     ".golangci.yml",
   ]
 }
-
