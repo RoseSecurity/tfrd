@@ -1,0 +1,51 @@
+# Copyright RoseSecurity 2026
+
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-shebang-scripts-are-executable
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: local
+    hooks:
+    - id: gitleaks
+      name: detect hardcoded secrets
+      entry: gitleaks git --pre-commit --redact --staged --verbose
+      language: system
+      pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: add-copywrite-headers
+        name: copywrite headers
+        entry: copywrite headers
+        language: system
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: golangci-lint-config-verify
+        name: golangci-lint config verify
+        entry: golangci-lint config verify --config .golangci.yml
+        language: system
+        pass_filenames: false
+        files: ^\.golangci\.yml$
+
+      - id: gofumpt
+        name: gofumpt
+        entry: bash -c 'make fmt'
+        language: system
+        types: ["go"]
+        files: ^tools/.*\.go$
+        pass_filenames: false
+

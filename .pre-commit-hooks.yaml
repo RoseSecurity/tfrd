@@ -1,0 +1,8 @@
+# Copyright RoseSecurity 2026
+
+- id: tfrd
+  name: tfrd
+  description: Identify unused parameters and attributes.
+  entry: tfrd
+  language: golang
+  pass_filenames: false
