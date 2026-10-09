@@ -1,4 +1,10 @@
-# tfrd — terraform resource diff
+# tfrd
+
+<p align="center">
+  <em>Terraform resource diffs for identifying unused attributes and parameters.</em>
+</p>
+
+## What I wrote this tool
 
 Reports the **settable schema attributes a resource does not use**. It's a
 coverage tool for Terraform/OpenTofu module authors: point it at a module and it
@@ -20,48 +26,7 @@ Read-only (computed-only) attributes are excluded by default — you can't set
 them, so they aren't "unused". Meta-arguments (`count`, `for_each`, `lifecycle`,
 …) are ignored because they aren't part of the resource schema.
 
+## Installation
+
 ## Usage
 
-```bash
-# The directory must be initialized so the provider is on disk.
-cd path/to/module
-terraform init
-
-tfrd                       # analyze every .tf in the current directory
-tfrd ./example             # analyze a specific directory
-tfrd -resource aws_instance ./example
-tfrd -file main.tf ./example
-tfrd -include-computed     # also list read-only attributes
-tfrd -json                 # machine-readable output
-```
-
-### Example output
-
-```
-local_file.example  (2/7 settable args used, 29% coverage)
-    content_base64 : string
-    directory_permission : string
-    file_permission : string
-    sensitive_content : string
-    source : string
-```
-
-Required arguments that are missing are marked with `!`, and unused nested
-blocks are listed with their inner arguments so you see the full surface.
-
-## Build
-
-```bash
-go build -o tfrd .
-go test ./...
-```
-
-## Known limitations
-
-- The working directory must be initialized (`terraform init`) so the schema is
-  available.
-- Nested *attribute* types (map/object attributes with structure) are treated as
-  used once the attribute is assigned; tfrd does not descend into the assigned
-  expression.
-- Coverage counts each nested block as a single settable element plus its inner
-  arguments.
