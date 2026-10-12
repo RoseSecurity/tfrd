@@ -1,4 +1,4 @@
-name: Test Terrafetch
+name: Test tfrd
 
 on:
   pull_request:
