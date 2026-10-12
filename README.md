@@ -1,32 +1,67 @@
 # tfrd
 
 <p align="center">
-  <em>Terraform resource diffs for identifying unused attributes and parameters.</em>
+  <img src="https://github.com/user-attachments/assets/cc082f82-2486-43ee-83b0-750816d01d15" alt="tfrd logo" width="550">
 </p>
 
-## What I wrote this tool
+<p align="center">
+  Terraform resource diffs for identifying unused attributes and parameters.
+</p>
 
-Reports the **settable schema attributes a resource does not use**. It's a
-coverage tool for Terraform/OpenTofu module authors: point it at a module and it
-tells you which arguments of the underlying resource you haven't exposed yet.
+## Why I wrote this tool
 
-It works by diffing the provider's published schema
-(`terraform providers schema -json`) against the attributes actually assigned in
-your configuration.
+In my limited free time, I enjoy maintaining community Terraform modules.
+Digging through the Terraform Registry documentation and switching between the
+browser and terminal can be tedious, so I built `tfrd` to compare the resources
+in a Terraform configuration with the provider schema and report unused
+attributes and parameters. As a community contributor, I want my modules to
+reflect the full range of functionality providers support, and this tool helps
+me find gaps.
 
-## How it works
+## Install
 
-1. Parses your `.tf` files with HCL to collect, per resource, the set of
-   attributes and nested blocks that are assigned (`dynamic` blocks are
-   unwrapped so their generated arguments count).
-2. Reads the provider schema from the **initialized** working directory.
-3. Diffs the two, recursively into nested blocks, and reports what's missing.
+Install the latest version with Go:
 
-Read-only (computed-only) attributes are excluded by default — you can't set
-them, so they aren't "unused". Meta-arguments (`count`, `for_each`, `lifecycle`,
-…) are ignored because they aren't part of the resource schema.
+```sh
+go install github.com/RoseSecurity/tfrd@latest
+```
 
-## Installation
+Or build from source:
+
+```sh
+git clone https://github.com/RoseSecurity/tfrd.git
+cd tfrd
+go build -o tfrd .
+```
 
 ## Usage
 
+Run `tfrd` from an initialized Terraform directory, or pass the directory as an
+argument:
+
+```sh
+tfrd
+tfrd ./examples
+```
+
+By default, `tfrd` analyzes `.tf` files directly inside the selected directory.
+Use `--file` to analyze one file, `--resource` to filter by resource type or
+address, and `--json` for machine-readable output:
+
+```sh
+tfrd --file ./examples/main.tf ./examples
+tfrd --resource local_file ./examples
+tfrd --json ./examples
+```
+
+Read-only computed attributes are excluded by default. Add
+`--include-computed` to include them in the report.
+
+Run `tfrd --help` for all available options.
+
+## Contributing
+
+Bug reports and feature requests are welcome in the
+[issue tracker](https://github.com/RoseSecurity/tfrd/issues). Pull requests are
+welcome; please fork the repository, make your changes on a branch, and open a
+pull request.
