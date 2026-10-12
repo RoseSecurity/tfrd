@@ -18,6 +18,10 @@ attributes and parameters. As a community contributor, I want my modules to
 reflect the full range of functionality providers support, and this tool helps
 me find gaps.
 
+## Demo
+
+<img width="1200" height="550" alt="tfrd-demo" src="https://github.com/user-attachments/assets/fa40eab2-cb4b-4ea3-a645-c6180caa0f21" />
+
 ## Install
 
 Install the latest version with Go:
