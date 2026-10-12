@@ -1,11 +1,11 @@
-# tfrd
-
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/cc082f82-2486-43ee-83b0-750816d01d15" alt="tfrd logo" width="550">
+  <img src="https://github.com/user-attachments/assets/f4ca875c-c687-442f-ad2e-0d3b28ec28f1" alt="tfrd logo" width="550">
 </p>
 
+---
+
 <p align="center">
-  Terraform resource diffs for identifying unused attributes and parameters.
+  <em>Terraform resource diffs for identifying unused attributes and parameters.</em>
 </p>
 
 ## Why I wrote this tool
