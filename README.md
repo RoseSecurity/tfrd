@@ -1,67 +1,67 @@
-# tfrd — terraform resource diff
+# tfrd
 
-Reports the **settable schema attributes a resource does not use**. It's a
-coverage tool for Terraform/OpenTofu module authors: point it at a module and it
-tells you which arguments of the underlying resource you haven't exposed yet.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cc082f82-2486-43ee-83b0-750816d01d15" alt="tfrd logo" width="550">
+</p>
 
-It works by diffing the provider's published schema
-(`terraform providers schema -json`) against the attributes actually assigned in
-your configuration.
+<p align="center">
+  Terraform resource diffs for identifying unused attributes and parameters.
+</p>
 
-## How it works
+## Why I wrote this tool
 
-1. Parses your `.tf` files with HCL to collect, per resource, the set of
-   attributes and nested blocks that are assigned (`dynamic` blocks are
-   unwrapped so their generated arguments count).
-2. Reads the provider schema from the **initialized** working directory.
-3. Diffs the two, recursively into nested blocks, and reports what's missing.
+In my limited free time, I enjoy maintaining community Terraform modules.
+Digging through the Terraform Registry documentation and switching between the
+browser and terminal can be tedious, so I built `tfrd` to compare the resources
+in a Terraform configuration with the provider schema and report unused
+attributes and parameters. As a community contributor, I want my modules to
+reflect the full range of functionality providers support, and this tool helps
+me find gaps.
 
-Read-only (computed-only) attributes are excluded by default — you can't set
-them, so they aren't "unused". Meta-arguments (`count`, `for_each`, `lifecycle`,
-…) are ignored because they aren't part of the resource schema.
+## Install
+
+Install the latest version with Go:
+
+```sh
+go install github.com/RoseSecurity/tfrd@latest
+```
+
+Or build from source:
+
+```sh
+git clone https://github.com/RoseSecurity/tfrd.git
+cd tfrd
+go build -o tfrd .
+```
 
 ## Usage
 
-```bash
-# The directory must be initialized so the provider is on disk.
-cd path/to/module
-terraform init
+Run `tfrd` from an initialized Terraform directory, or pass the directory as an
+argument:
 
-tfrd                       # analyze every .tf in the current directory
-tfrd ./example             # analyze a specific directory
-tfrd -resource aws_instance ./example
-tfrd -file main.tf ./example
-tfrd -include-computed     # also list read-only attributes
-tfrd -json                 # machine-readable output
+```sh
+tfrd
+tfrd ./examples
 ```
 
-### Example output
+By default, `tfrd` analyzes `.tf` files directly inside the selected directory.
+Use `--file` to analyze one file, `--resource` to filter by resource type or
+address, and `--json` for machine-readable output:
 
-```
-local_file.example  (2/7 settable args used, 29% coverage)
-    content_base64 : string
-    directory_permission : string
-    file_permission : string
-    sensitive_content : string
-    source : string
-```
-
-Required arguments that are missing are marked with `!`, and unused nested
-blocks are listed with their inner arguments so you see the full surface.
-
-## Build
-
-```bash
-go build -o tfrd .
-go test ./...
+```sh
+tfrd --file ./examples/main.tf ./examples
+tfrd --resource local_file ./examples
+tfrd --json ./examples
 ```
 
-## Known limitations
+Read-only computed attributes are excluded by default. Add
+`--include-computed` to include them in the report.
 
-- The working directory must be initialized (`terraform init`) so the schema is
-  available.
-- Nested *attribute* types (map/object attributes with structure) are treated as
-  used once the attribute is assigned; tfrd does not descend into the assigned
-  expression.
-- Coverage counts each nested block as a single settable element plus its inner
-  arguments.
+Run `tfrd --help` for all available options.
+
+## Contributing
+
+Bug reports and feature requests are welcome in the
+[issue tracker](https://github.com/RoseSecurity/tfrd/issues). Pull requests are
+welcome; please fork the repository, make your changes on a branch, and open a
+pull request.
