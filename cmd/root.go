@@ -15,14 +15,16 @@ var (
 	resource        string
 	includeComputed bool
 	jsonOut         bool
+	runInit         bool
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "tfrd [flags] [dir]",
 	Short: "Terraform resource diffs for identifying unused attributes and parameters",
 	Long: `Reports unused settable attributes for the resources in a Terraform
-configuration. The directory must already be initialized (terraform init)
-so that the provider schema is available.`,
+configuration. The directory must be initialized (terraform init) so that
+the provider schema is available, or pass --init to initialize it
+automatically before loading the provider schema.`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	Version:       Version,
@@ -38,6 +40,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&resource, "resource", "r", "", "only analyze resources of this type (e.g. aws_instance) or address (aws_instance.web)")
 	rootCmd.Flags().BoolVarP(&includeComputed, "include-computed", "c", false, "also report read-only (computed-only) attributes")
 	rootCmd.Flags().BoolVarP(&jsonOut, "json", "j", false, "emit JSON instead of a text report")
+	rootCmd.Flags().BoolVarP(&runInit, "init", "i", false, "run 'terraform init' before loading provider schemas")
 }
 
 func runRoot(cmd *cobra.Command, args []string) error {
@@ -55,6 +58,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		File:            file,
 		Resource:        resource,
 		IncludeComputed: includeComputed,
+		RunInit:         runInit,
 		JSON:            jsonOut,
 	})
 }

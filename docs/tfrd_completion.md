@@ -21,3 +21,4 @@ See each sub-command's help for details on how to use the generated script.
 * [tfrd completion fish](tfrd_completion_fish.md)	 - Generate the autocompletion script for fish
 * [tfrd completion powershell](tfrd_completion_powershell.md)	 - Generate the autocompletion script for powershell
 * [tfrd completion zsh](tfrd_completion_zsh.md)	 - Generate the autocompletion script for zsh
+

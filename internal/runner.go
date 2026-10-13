@@ -9,6 +9,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/briandowns/spinner"
 )
 
 // Options specifies configuration for running tfrd.
@@ -17,6 +20,7 @@ type Options struct {
 	File            string
 	Resource        string
 	IncludeComputed bool
+	RunInit         bool
 	JSON            bool
 	Writer          io.Writer
 }
@@ -31,6 +35,25 @@ func MatchesFilter(r *Resource, filter string) bool {
 
 // Run executes the diff analysis according to the specified options.
 func Run(opts Options) error {
+	s := spinner.New(
+		spinner.CharSets[14],
+		100*time.Millisecond,
+		spinner.WithWriterFile(os.Stderr),
+	)
+	s.Suffix = " Analyzing Terraform configuration..."
+	if err := s.Color("magenta", "bold"); err != nil {
+		return fmt.Errorf("configuring spinner: %w", err)
+	}
+	s.Start()
+	spinnerRunning := true
+	stopSpinner := func() {
+		if spinnerRunning {
+			s.Stop()
+			spinnerRunning = false
+		}
+	}
+	defer stopSpinner()
+
 	dir := opts.Dir
 	if dir == "" {
 		dir = "."
@@ -66,7 +89,7 @@ func Run(opts Options) error {
 	}
 
 	// 3. Pull the provider schema from the initialized working directory.
-	schemas, err := LoadSchemas(dir)
+	schemas, err := LoadSchemas(dir, opts.RunInit)
 	if err != nil {
 		return err
 	}
@@ -91,6 +114,7 @@ func Run(opts Options) error {
 
 	sort.Slice(reports, func(i, j int) bool { return reports[i].Address < reports[j].Address })
 
+	stopSpinner()
 	if opts.JSON {
 		return PrintJSON(w, reports)
 	}
