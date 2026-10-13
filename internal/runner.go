@@ -41,7 +41,7 @@ func Run(opts Options) error {
 		spinner.WithWriterFile(os.Stderr),
 	)
 	s.Suffix = " Analyzing Terraform configuration..."
-	if err := s.Color("purple", "bold"); err != nil {
+	if err := s.Color("magenta", "bold"); err != nil {
 		return fmt.Errorf("configuring spinner: %w", err)
 	}
 	s.Start()
