@@ -13,6 +13,8 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+const findingKindBlock = "block"
+
 // Finding is one settable schema element the config does not use.
 type Finding struct {
 	Path     string `json:"path"`               // dotted path, e.g. "ebs_block_device.encrypted"
@@ -83,7 +85,7 @@ func Diff(schema *tfjson.SchemaBlock, cfg *CfgBlock, prefix string, includeCompu
 		if len(instances) == 0 {
 			rep.Unused = append(rep.Unused, Finding{
 				Path:     prefix + name,
-				Kind:     "block",
+				Kind:     findingKindBlock,
 				Required: blockType.MinItems > 0,
 			})
 			// Still descend so the author sees which arguments the block
@@ -165,8 +167,8 @@ func PrintText(w io.Writer, reports []ResourceReport) {
 				detail = "required"
 			case f.Computed:
 				detail = "read-only"
-			case f.Kind == "block":
-				detail = "block"
+			case f.Kind == findingKindBlock:
+				detail = findingKindBlock
 			case f.Type != "":
 				detail = f.Type
 			}

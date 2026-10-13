@@ -19,16 +19,28 @@ type SchemaSet struct {
 	Providers *tfjson.ProviderSchemas
 }
 
-// LoadSchemas runs `terraform providers schema -json` in dir and decodes it.
-// The directory must be initialized so the providers are on disk.
-func LoadSchemas(dir string) (*SchemaSet, error) {
-	cmd := exec.Command("terraform", fmt.Sprintf("-chdir=%s", dir), "providers", "schema", "-json")
+// LoadSchemas optionally initializes dir, then runs `terraform providers
+// schema -json` and decodes the provider schemas.
+func LoadSchemas(dir string, runInit bool) (*SchemaSet, error) {
+	if runInit {
+		if err := initializeTerraform(dir); err != nil {
+			return nil, err
+		}
+		return loadSchemas(dir, false)
+	}
+
+	return loadSchemas(dir, true)
+}
+
+func loadSchemas(dir string, promptToInit bool) (*SchemaSet, error) {
+	cmd := exec.Command("terraform", "providers", "schema", "-json")
+	cmd.Dir = dir
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		msg := strings.TrimSpace(stderr.String())
-		if strings.Contains(msg, "terraform init") || strings.Contains(msg, "Missing") {
+		if promptToInit && (strings.Contains(msg, "terraform init") || strings.Contains(msg, "Missing")) {
 			// Prompt the user if they want to run terraform init in the directory or do it themselves.
 			prompt := promptui.Prompt{
 				Label:     "Do you want to run `terraform init` in this directory now? (y/N)",
@@ -41,16 +53,11 @@ func LoadSchemas(dir string) (*SchemaSet, error) {
 				return nil, fmt.Errorf("could not read provider schema — run `terraform init` in %q first\n\n%s", dir, msg)
 			}
 			if strings.ToLower(result) == "y" {
-				// Let the user know that terraform init is being run.
-				fmt.Printf("Running `terraform init` in %q...\n", dir)
-				initCmd := exec.Command("terraform", fmt.Sprintf("-chdir=%s", dir), "init", "-backend=false")
-				initCmd.Stdout = &stdout
-				initCmd.Stderr = &stderr
-				if err := initCmd.Run(); err != nil {
-					return nil, fmt.Errorf("terraform init failed: %v\n%s", err, stderr.String())
+				if err := initializeTerraform(dir); err != nil {
+					return nil, err
 				}
 				// Retry loading the schemas after successful init.
-				return LoadSchemas(dir)
+				return loadSchemas(dir, false)
 			}
 			return nil, fmt.Errorf("could not read provider schema — run `terraform init` in %q first\n\n%s", dir, msg)
 		}
@@ -62,6 +69,18 @@ func LoadSchemas(dir string) (*SchemaSet, error) {
 		return nil, fmt.Errorf("decoding provider schema: %w", err)
 	}
 	return &SchemaSet{Providers: &ps}, nil
+}
+
+func initializeTerraform(dir string) error {
+	fmt.Printf("Running `terraform init` in %q...\n", dir)
+	cmd := exec.Command("terraform", "init", "-backend=false")
+	cmd.Dir = dir
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("terraform init failed: %v\n%s", err, strings.TrimSpace(stderr.String()))
+	}
+	return nil
 }
 
 // ResourceBlock finds the schema block for a resource type across all installed

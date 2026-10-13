@@ -41,11 +41,13 @@ go build -o tfrd .
 ## Usage
 
 Run `tfrd` from an initialized Terraform directory, or pass the directory as an
-argument:
+argument. Use `--init` to run `terraform init -backend=false` automatically
+before loading the provider schema:
 
 ```sh
 tfrd
 tfrd ./examples
+tfrd --init ./examples
 ```
 
 By default, `tfrd` analyzes `.tf` files directly inside the selected directory.

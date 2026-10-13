@@ -20,6 +20,7 @@ type Options struct {
 	File            string
 	Resource        string
 	IncludeComputed bool
+	RunInit         bool
 	JSON            bool
 	Writer          io.Writer
 }
@@ -40,7 +41,9 @@ func Run(opts Options) error {
 		spinner.WithWriterFile(os.Stderr),
 	)
 	s.Suffix = " Analyzing Terraform configuration..."
-	s.Color("purple", "bold")
+	if err := s.Color("purple", "bold"); err != nil {
+		return fmt.Errorf("configuring spinner: %w", err)
+	}
 	s.Start()
 	spinnerRunning := true
 	stopSpinner := func() {
@@ -86,7 +89,7 @@ func Run(opts Options) error {
 	}
 
 	// 3. Pull the provider schema from the initialized working directory.
-	schemas, err := LoadSchemas(dir)
+	schemas, err := LoadSchemas(dir, opts.RunInit)
 	if err != nil {
 		return err
 	}
