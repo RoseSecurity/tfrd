@@ -16,13 +16,14 @@ import (
 
 // Options specifies configuration for running tfrd.
 type Options struct {
-	Dir             string
-	File            string
-	Resource        string
-	IncludeComputed bool
-	RunInit         bool
-	JSON            bool
-	Writer          io.Writer
+	Dir                 string
+	File                string
+	Resource            string
+	IncludeComputed     bool
+	IncludeDescriptions bool
+	RunInit             bool
+	JSON                bool
+	Writer              io.Writer
 }
 
 // MatchesFilter reports whether a resource matches the filter string (resource type or full address).
@@ -109,7 +110,7 @@ func Run(opts Options) error {
 			})
 			continue
 		}
-		reports = append(reports, BuildReport(r, schemaBlock, opts.IncludeComputed))
+		reports = append(reports, BuildReport(r, schemaBlock, opts.IncludeComputed, opts.IncludeDescriptions))
 	}
 
 	sort.Slice(reports, func(i, j int) bool { return reports[i].Address < reports[j].Address })

@@ -11,11 +11,12 @@ import (
 )
 
 var (
-	file            string
-	resource        string
-	includeComputed bool
-	jsonOut         bool
-	runInit         bool
+	file                string
+	resource            string
+	includeComputed     bool
+	includeDescriptions bool
+	jsonOut             bool
+	runInit             bool
 )
 
 var rootCmd = &cobra.Command{
@@ -40,6 +41,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&resource, "resource", "r", "", "only analyze resources of this type (e.g. aws_instance) or address (aws_instance.web)")
 	rootCmd.Flags().BoolVarP(&includeComputed, "include-computed", "c", false, "also report read-only (computed-only) attributes")
 	rootCmd.Flags().BoolVarP(&jsonOut, "json", "j", false, "emit JSON instead of a text report")
+	rootCmd.Flags().BoolVarP(&includeDescriptions, "include-descriptions", "d", false, "include attribute descriptions in the report")
 	rootCmd.Flags().BoolVarP(&runInit, "init", "i", false, "run 'terraform init' before loading provider schemas")
 }
 
@@ -54,12 +56,13 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	}
 
 	return internal.Run(internal.Options{
-		Dir:             dir,
-		File:            file,
-		Resource:        resource,
-		IncludeComputed: includeComputed,
-		RunInit:         runInit,
-		JSON:            jsonOut,
+		Dir:                 dir,
+		File:                file,
+		Resource:            resource,
+		IncludeComputed:     includeComputed,
+		IncludeDescriptions: includeDescriptions,
+		RunInit:             runInit,
+		JSON:                jsonOut,
 	})
 }
 
