@@ -17,11 +17,12 @@ const findingKindBlock = "block"
 
 // Finding is one settable schema element the config does not use.
 type Finding struct {
-	Path     string `json:"path"`               // dotted path, e.g. "ebs_block_device.encrypted"
-	Kind     string `json:"kind"`               // "attribute" or "block"
-	Type     string `json:"type,omitempty"`     // friendly type for attributes
-	Required bool   `json:"required"`           // required arguments are the loud ones
-	Computed bool   `json:"computed,omitempty"` // only set when -include-computed surfaces read-only attrs
+	Path        string `json:"path"`                  // dotted path, e.g. "ebs_block_device.encrypted"
+	Kind        string `json:"kind"`                  // "attribute" or "block"
+	Type        string `json:"type,omitempty"`        // friendly type for attributes
+	Description string `json:"description,omitempty"` // optional description from the schema
+	Required    bool   `json:"required"`              // required arguments are the loud ones
+	Computed    bool   `json:"computed,omitempty"`    // only set when -include-computed surfaces read-only attrs
 }
 
 type ResourceReport struct {
@@ -34,9 +35,9 @@ type ResourceReport struct {
 	Coverage float64   `json:"coverage,omitempty"` // used/total, computed for text output
 }
 
-func BuildReport(r *Resource, schema *tfjson.SchemaBlock, includeComputed bool) ResourceReport {
+func BuildReport(r *Resource, schema *tfjson.SchemaBlock, includeComputed, includeDescriptions bool) ResourceReport {
 	rep := ResourceReport{Address: r.Address(), Type: r.Type}
-	Diff(schema, r.Body, "", includeComputed, &rep)
+	Diff(schema, r.Body, "", includeComputed, includeDescriptions, &rep)
 	if rep.Total > 0 {
 		rep.Coverage = float64(rep.Used) / float64(rep.Total) * 100
 	}
@@ -53,7 +54,7 @@ func BuildReport(r *Resource, schema *tfjson.SchemaBlock, includeComputed bool) 
 
 // Diff walks a schema block against the presence tree of a config block,
 // recording settable elements the config omits and tallying coverage.
-func Diff(schema *tfjson.SchemaBlock, cfg *CfgBlock, prefix string, includeComputed bool, rep *ResourceReport) {
+func Diff(schema *tfjson.SchemaBlock, cfg *CfgBlock, prefix string, includeComputed, includeDescriptions bool, rep *ResourceReport) {
 	for name, attr := range schema.Attributes {
 		readOnly := attr.Computed && !Settable(attr)
 		if readOnly && !includeComputed {
@@ -67,12 +68,17 @@ func Diff(schema *tfjson.SchemaBlock, cfg *CfgBlock, prefix string, includeCompu
 			// use and don't descend.
 			continue
 		}
+		description := ""
+		if includeDescriptions {
+			description = attr.Description
+		}
 		rep.Unused = append(rep.Unused, Finding{
-			Path:     prefix + name,
-			Kind:     "attribute",
-			Type:     AttrType(attr),
-			Required: attr.Required,
-			Computed: readOnly,
+			Path:        prefix + name,
+			Kind:        "attribute",
+			Type:        AttrType(attr),
+			Description: description,
+			Required:    attr.Required,
+			Computed:    readOnly,
 		})
 	}
 
@@ -90,11 +96,11 @@ func Diff(schema *tfjson.SchemaBlock, cfg *CfgBlock, prefix string, includeCompu
 			})
 			// Still descend so the author sees which arguments the block
 			// exposes, all reported as unused under it.
-			Diff(blockType.Block, nil, prefix+name+".", includeComputed, rep)
+			Diff(blockType.Block, nil, prefix+name+".", includeComputed, includeDescriptions, rep)
 			continue
 		}
 		rep.Used++
-		Diff(blockType.Block, Merge(instances), prefix+name+".", includeComputed, rep)
+		Diff(blockType.Block, Merge(instances), prefix+name+".", includeComputed, includeDescriptions, rep)
 	}
 }
 
@@ -174,21 +180,14 @@ func PrintText(w io.Writer, reports []ResourceReport) {
 			}
 
 			if detail != "" {
-				fmt.Fprintf(
-					w,
-					"  %-2s %-40s %s\n",
-					icon,
-					f.Path,
-					metaStyle.Render(detail),
-				)
+				fmt.Fprintf(w, "  %-2s %-40s %s", icon, f.Path, metaStyle.Render(detail))
 			} else {
-				fmt.Fprintf(
-					w,
-					"  %-2s %s\n",
-					icon,
-					f.Path,
-				)
+				fmt.Fprintf(w, "  %-2s %s", icon, f.Path)
 			}
+			if f.Description != "" {
+				fmt.Fprintf(w, "  %s", metaStyle.Render(f.Description))
+			}
+			fmt.Fprintln(w)
 		}
 	}
 }

@@ -42,4 +42,3 @@ jobs:
           grep -q "local_file.example" output.txt || { echo "Missing local_file"; exit 1; }
 
           echo "✅ Validation passed: Output contains expected elements"
-

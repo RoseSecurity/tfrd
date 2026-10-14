@@ -62,6 +62,8 @@ tfrd --json ./examples
 
 Read-only computed attributes are excluded by default. Add
 `--include-computed` to include them in the report.
+Add `--include-descriptions` to include provider-supplied descriptions for
+unused attributes in text and JSON output.
 
 Run `tfrd --help` for all available options.
 

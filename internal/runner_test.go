@@ -41,10 +41,11 @@ func TestPrintTextAndJSON(t *testing.T) {
 			Coverage: 40.0,
 			Unused: []Finding{
 				{
-					Path:     "file_permission",
-					Kind:     "attribute",
-					Type:     "string",
-					Required: false,
+					Path:        "file_permission",
+					Kind:        "attribute",
+					Type:        "string",
+					Description: "The permissions for the file.",
+					Required:    false,
 				},
 				{
 					Path:     "content_base64",
@@ -71,14 +72,19 @@ func TestPrintTextAndJSON(t *testing.T) {
 	var buf bytes.Buffer
 	PrintText(&buf, reports)
 	output := buf.String()
-	if !strings.Contains(output, "local_file.example  (2/5 settable args used, 40% coverage)") {
+	if !strings.Contains(output, "local_file.example") ||
+		!strings.Contains(output, "2/5 used") ||
+		!strings.Contains(output, "40% coverage") {
 		t.Errorf("unexpected text output: %s", output)
 	}
-	if !strings.Contains(output, "! no schema found for this resource type") {
+	if !strings.Contains(output, "no schema found for this resource type") {
 		t.Errorf("expected error in text output: %s", output)
 	}
-	if !strings.Contains(output, "every settable argument is used") {
+	if !strings.Contains(output, "all settable arguments used") {
 		t.Errorf("expected full coverage message in text output: %s", output)
+	}
+	if !strings.Contains(output, "The permissions for the file.") {
+		t.Errorf("expected attribute description in text output: %s", output)
 	}
 
 	buf.Reset()
@@ -88,6 +94,9 @@ func TestPrintTextAndJSON(t *testing.T) {
 	jsonOut := buf.String()
 	if !strings.Contains(jsonOut, `"address": "local_file.example"`) {
 		t.Errorf("unexpected json output: %s", jsonOut)
+	}
+	if !strings.Contains(jsonOut, `"description": "The permissions for the file."`) {
+		t.Errorf("expected attribute description in JSON output: %s", jsonOut)
 	}
 }
 

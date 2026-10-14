@@ -57,4 +57,3 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-

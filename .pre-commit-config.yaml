@@ -48,4 +48,3 @@ repos:
         types: ["go"]
         files: ^tools/.*\.go$
         pass_filenames: false
-

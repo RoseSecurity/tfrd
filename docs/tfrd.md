@@ -16,12 +16,13 @@ tfrd [flags] [dir]
 ### Options
 
 ```
-  -f, --file string        analyze a single .tf file instead of every .tf in the directory
-  -h, --help               help for tfrd
-  -c, --include-computed   also report read-only (computed-only) attributes
-  -i, --init               run 'terraform init' before loading provider schemas
-  -j, --json               emit JSON instead of a text report
-  -r, --resource string    only analyze resources of this type (e.g. aws_instance) or address (aws_instance.web)
+  -f, --file string            analyze a single .tf file instead of every .tf in the directory
+  -h, --help                   help for tfrd
+  -c, --include-computed       also report read-only (computed-only) attributes
+  -d, --include-descriptions   include attribute descriptions in the report
+  -i, --init                   run 'terraform init' before loading provider schemas
+  -j, --json                   emit JSON instead of a text report
+  -r, --resource string        only analyze resources of this type (e.g. aws_instance) or address (aws_instance.web)
 ```
 
 ### SEE ALSO

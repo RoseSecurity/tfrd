@@ -43,10 +43,10 @@ func sampleSchema() *tfjson.SchemaBlock {
 	}
 }
 
-func report(t *testing.T, cfg *CfgBlock, includeComputed bool) ResourceReport {
+func report(t *testing.T, cfg *CfgBlock, includeComputed, includeDescriptions bool) ResourceReport {
 	t.Helper()
 	r := &Resource{Type: "x", Name: "y", Body: cfg}
-	return BuildReport(r, sampleSchema(), includeComputed)
+	return BuildReport(r, sampleSchema(), includeComputed, includeDescriptions)
 }
 
 func findingPaths(rep ResourceReport) map[string]Finding {
@@ -58,7 +58,7 @@ func findingPaths(rep ResourceReport) map[string]Finding {
 }
 
 func TestComputedOnlyExcludedByDefault(t *testing.T) {
-	rep := report(t, NewCfgBlock(), false)
+	rep := report(t, NewCfgBlock(), false, false)
 	got := findingPaths(rep)
 	if _, ok := got["id"]; ok {
 		t.Errorf("read-only attribute 'id' should not be reported without -include-computed")
@@ -70,7 +70,7 @@ func TestComputedOnlyExcludedByDefault(t *testing.T) {
 }
 
 func TestRequiredFlagged(t *testing.T) {
-	rep := report(t, NewCfgBlock(), false)
+	rep := report(t, NewCfgBlock(), false, false)
 	got := findingPaths(rep)
 	if f := got["name"]; !f.Required {
 		t.Errorf("'name' should be flagged required, got %+v", f)
@@ -84,7 +84,7 @@ func TestUsedAttributesNotReported(t *testing.T) {
 	cfg := NewCfgBlock()
 	cfg.Attrs["name"] = true
 	cfg.Attrs["tags"] = true
-	rep := report(t, cfg, false)
+	rep := report(t, cfg, false, false)
 	got := findingPaths(rep)
 	if _, ok := got["name"]; ok {
 		t.Errorf("'name' is set and must not be reported unused")
@@ -102,7 +102,7 @@ func TestNestedBlockRecursion(t *testing.T) {
 	inner.Attrs["port"] = true
 	cfg.Blocks["ingress"] = []*CfgBlock{inner}
 
-	rep := report(t, cfg, false)
+	rep := report(t, cfg, false, false)
 	got := findingPaths(rep)
 	if _, ok := got["ingress"]; ok {
 		t.Errorf("'ingress' is present and should not be reported as an unused block")
@@ -116,7 +116,7 @@ func TestNestedBlockRecursion(t *testing.T) {
 }
 
 func TestUnusedBlockStillListsItsArgs(t *testing.T) {
-	rep := report(t, NewCfgBlock(), false)
+	rep := report(t, NewCfgBlock(), false, false)
 	got := findingPaths(rep)
 	// The block is unused, but its arguments should be enumerated so the
 	// author sees the whole surface.
@@ -130,13 +130,29 @@ func TestUnusedBlockStillListsItsArgs(t *testing.T) {
 func TestCoverageCounts(t *testing.T) {
 	cfg := NewCfgBlock()
 	cfg.Attrs["name"] = true
-	rep := report(t, cfg, false)
+	rep := report(t, cfg, false, false)
 	// settable: name, tags, arn, ingress(block), ingress.port, ingress.protocol = 6
 	if rep.Total != 6 {
 		t.Errorf("expected 6 settable elements, got %d", rep.Total)
 	}
 	if rep.Used != 1 {
 		t.Errorf("expected 1 used, got %d", rep.Used)
+	}
+}
+
+func TestDescriptionsIncludedOnlyWhenRequested(t *testing.T) {
+	schema := sampleSchema()
+	schema.Attributes["tags"].Description = "A map of resource tags."
+	r := &Resource{Type: "x", Name: "y", Body: NewCfgBlock()}
+
+	withoutDescriptions := BuildReport(r, schema, false, false)
+	if got := findingPaths(withoutDescriptions)["tags"].Description; got != "" {
+		t.Errorf("description should be omitted by default, got %q", got)
+	}
+
+	withDescriptions := BuildReport(r, schema, false, true)
+	if got := findingPaths(withDescriptions)["tags"].Description; got != "A map of resource tags." {
+		t.Errorf("expected schema description, got %q", got)
 	}
 }
 
