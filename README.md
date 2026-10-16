@@ -24,18 +24,36 @@ me find gaps.
 
 ## Install
 
-Install the latest version with Go:
+### Go
+
+If you have a functional Go environment, you can install with:
 
 ```sh
 go install github.com/RoseSecurity/tfrd@latest
 ```
 
-Or build from source:
+### Apt
+
+To install packages, you can quickly setup the repository automatically:
+
+```sh
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/rosesecurity/tfrd/setup.deb.sh' \
+  | sudo -E bash
+```
+
+Once the repository is configured, you can install with:
+
+```sh
+apt install tfrd
+```
+
+### Source
 
 ```sh
 git clone https://github.com/RoseSecurity/tfrd.git
 cd tfrd
-go build -o tfrd .
+make build
 ```
 
 ## Usage
