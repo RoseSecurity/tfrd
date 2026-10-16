@@ -31,7 +31,7 @@ run: build ## Run tfrd
 docs: build ## Generate documentation
 	./build/$(BINARY_NAME) docs
 
-prep: generate build docs ## Prepare for release
+prep: fmt generate build docs ## Prepare for release
 	go mod tidy
 	go vet
 
