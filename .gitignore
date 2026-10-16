@@ -23,6 +23,7 @@ terraform.tfstate*
 # Test binary, built with `go test -c`
 *.test
 build/**
+dist/**
 
 # Code coverage profiles and other test artifacts
 *.out
