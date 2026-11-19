@@ -24,7 +24,7 @@ me find gaps.
 
 ## Install
 
-## Homebrew
+### Homebrew
 
 If you manage packages with [brew](https://brew.sh/), you can use this repository's tap to install with:
 
