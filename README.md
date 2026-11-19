@@ -24,6 +24,16 @@ me find gaps.
 
 ## Install
 
+## Homebrew
+
+If you manage packages with [brew](https://brew.sh/), you can use this repository's tap to install with:
+
+```sh
+brew tap RoseSecurity/tfrd https://github.com/RoseSecurity/tfrd
+brew trust --formula rosesecurity/tfrd/tfrd
+brew install tfrd
+```
+
 ### Go
 
 If you have a functional Go environment, you can install with:
