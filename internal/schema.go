@@ -38,7 +38,15 @@ func loadSchemas(dir string, promptToInit bool) (*SchemaSet, error) {
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
+	runErr := func() error {
+		s, err := StartSpinner()
+		if err != nil {
+			return err
+		}
+		defer StopSpinner(s)
+		return cmd.Run()
+	}()
+	if runErr != nil {
 		msg := strings.TrimSpace(stderr.String())
 		if promptToInit && (strings.Contains(msg, "terraform init") || strings.Contains(msg, "Missing")) {
 			// Prompt the user if they want to run terraform init in the directory or do it themselves.
@@ -61,7 +69,7 @@ func loadSchemas(dir string, promptToInit bool) (*SchemaSet, error) {
 			}
 			return nil, fmt.Errorf("could not read provider schema — run `terraform init` in %q first\n\n%s", dir, msg)
 		}
-		return nil, fmt.Errorf("terraform providers schema failed: %v\n%s", err, msg)
+		return nil, fmt.Errorf("terraform providers schema failed: %v\n%s", runErr, msg)
 	}
 
 	var ps tfjson.ProviderSchemas
